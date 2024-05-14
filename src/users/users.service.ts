@@ -31,6 +31,10 @@ export class UsersService {
     return this.mailService.sendApprovedUser(approvedUser.email, loginUrl, approvedUser.firstName, approvedUser.lastName);
   }
 
+  getMyInfo(req: Request) {
+    return this.usersRepository.findById(req['user'].userId);
+  }
+  
   private async isAdmin(userId: string) {
     const userAdmin = await this.usersRepository.findById(userId);
     return userAdmin.admin;

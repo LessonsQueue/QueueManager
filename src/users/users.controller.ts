@@ -19,4 +19,10 @@ export class UsersController {
     await this.usersService.approveUser(dto, req);
     return { message: `User with id: ${dto.id} is approved` };
   }
+
+  @Get('me')
+  async getMyInfo(@Req() req: Request) {
+    const user = await this.usersService.getMyInfo(req);
+    return new UserEntity(user);
+  }
 }

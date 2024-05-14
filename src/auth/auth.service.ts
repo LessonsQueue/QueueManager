@@ -7,6 +7,7 @@ import * as crypto from 'crypto';
 import { MailService } from '../mail/mail.service';
 import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
+import { Request } from 'express';
 
 @Injectable()
 export class AuthService {
@@ -69,5 +70,10 @@ export class AuthService {
 
   async hashPassword(password: string) {
     return bcrypt.hash(password, await bcrypt.genSalt(10))
+  }
+
+  extractTokenFromHeader(request: Request): string | undefined {
+    const [type, token] = request.headers.authorization?.split(' ') ?? [];
+    return type === 'Bearer' ? token: undefined;
   }
 }

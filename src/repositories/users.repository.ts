@@ -25,6 +25,12 @@ export class UsersRepository {
     });
   }
 
+  findAllNotApproved() {
+    return this.prisma.user.findMany({
+      where: { approved: false },
+    });
+  }
+
   findByVerifiedTokenContains (token: string, type: string) {
     return this.prisma.user.findFirst({
       where: {

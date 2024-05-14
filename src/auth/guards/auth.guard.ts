@@ -27,17 +27,14 @@ export class AuthGuard implements CanActivate {
       throw new UnauthorizedException();
     }
 
-    try {
-      const payload = await this.jwtService.verifyAsync(token, { secret: process.env.JWT_SECRET });
-      const user = await this.usersRepository.findById(payload.userId);
-      const hash = this.authService.getHash(user.email, user.password);
-      if (hash !== payload.hash) {
-        throw new UnauthorizedException('Login with new credentials');
-      }
-      request['user'] = payload;
-    } catch (err) {
-      throw new UnauthorizedException();
+    const payload = await this.jwtService.verifyAsync(token, { secret: process.env.JWT_SECRET })
+      .catch(err => {throw new UnauthorizedException()});
+    const user = await this.usersRepository.findById(payload.userId);
+    const hash = this.authService.getHash(user.email, user.password);
+    if (hash !== payload.hash) {
+      throw new UnauthorizedException('Login with new credentials');
     }
+    request['user'] = payload;
 
     return true;
   }

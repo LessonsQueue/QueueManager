@@ -125,6 +125,26 @@ export class AuthService {
     return this.usersRepository.update(user.id, { verifiedToken: null, password: dto.password });
   }
 
+  async resendVerifyEmail(dto: LoginDto) {
+    const user = await this.usersRepository.findByEmail(dto.email);
+    if (!user) {
+      throw new NotFoundException(`No user found for email: ${dto.email}`);
+    }
+    if (!user.verifiedToken || !user.verifiedToken.includes('::email::')) {
+      throw new BadRequestException('Email has already verified');
+    }
+    const isPasswordsValid = await bcrypt.compare(dto.password, user.password);
+    if (!isPasswordsValid) {
+      throw new UnauthorizedException('Invalid password');
+    }
+    const token = uuidv4();
+    const expireDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    const verifiedToken = `${token}::email::${expireDate}`;
+    const url = process.env.FRONTEND_DOMAIN + 'verify-email/' + token;
+    await this.mailService.sendVerifyEmail(user.email, url);
+    return this.usersRepository.update(user.id, { verifiedToken });
+  }
+
   private getTokens(userId: string, email: string, password: string) {
     return {
       accessToken: this.jwtService.sign({

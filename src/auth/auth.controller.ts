@@ -6,7 +6,7 @@ import { UserEntity } from '../users/entity/user.entity';
 import { Public } from '../utils/decorators/skip-auth.decorator';
 import { VerifyEmailDto } from './dto/verify-email.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
-import { Request, Response } from 'express';
+import { Request } from 'express';
 import { SendResetDto } from './dto/send-reset-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 
@@ -36,8 +36,9 @@ export class AuthController {
 
   @Public()
   @Patch('verify-email')
-  verifyEmail(@Body() dto: VerifyEmailDto) {
-    return this.authService.verifyEmail(dto);
+  async verifyEmail(@Body() dto: VerifyEmailDto) {
+    await this.authService.verifyEmail(dto);
+    return { message: 'email is verified' };
   }
 
   @Public()
@@ -58,5 +59,12 @@ export class AuthController {
   async resetPassword(@Body() dto: ResetPasswordDto) {
     await this.authService.resetPassword(dto);
     return { message: 'password is changed' };
+  }
+
+  @Public()
+  @Post('resend-verify-email')
+  async resendVerifyEmail(@Body() dto: LoginDto) {
+    await this.authService.resendVerifyEmail(dto);
+    return { message: 'check your email' };
   }
 }

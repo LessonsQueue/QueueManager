@@ -19,6 +19,22 @@ export class UsersRepository {
     });
   }
 
+  findByRefreshToken(refreshToken: string) {
+    return this.prisma.user.findFirst({
+      where: { refreshToken }
+    });
+  }
+
+  findByVerifiedTokenContains(token: string, type: string) {
+    return this.prisma.user.findFirst({
+      where: {
+        verifiedToken: {
+          contains: `${token}::${type}::`
+        }
+      }
+    });
+  }
+
   create(dto: RegisterDto) {
     return this.prisma.user.create({
       data: dto

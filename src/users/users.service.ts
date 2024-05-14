@@ -3,10 +3,16 @@ import { UsersRepository } from '../repositories/users.repository';
 import { Request } from 'express';
 import { ApproveUserDto } from './dto/approve-user.dto';
 import { MailService } from '../mail/mail.service';
+import { ChangePasswordDto } from './dto/change-password.dto';
+import { AuthService } from '../auth/auth.service';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly usersRepository: UsersRepository, private readonly mailService: MailService) {}
+  constructor(
+    private readonly usersRepository: UsersRepository, 
+    private readonly mailService: MailService, 
+    private readonly authService: AuthService,
+  ) {}
 
   async getNotApprovedUsers(req: Request) {
     if (!await this.isAdmin(req['user'].userId)) {
@@ -33,6 +39,11 @@ export class UsersService {
 
   getMyInfo(req: Request) {
     return this.usersRepository.findById(req['user'].userId);
+  }
+
+  async changePassword(dto: ChangePasswordDto, req: Request) {
+    const hashedPassword = await this.authService.hashPassword(dto.password);
+    return this.usersRepository.update(req['user'].userId, { password: hashedPassword });
   }
   
   private async isAdmin(userId: string) {

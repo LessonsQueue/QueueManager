@@ -12,7 +12,7 @@ import { join } from 'path';
       auth: {
         user: process.env.MAIL_NAME,
         pass: process.env.MAIL_PASS,
-      }
+      },
     },
     defaults: {
       from: process.env.MAIL_NAME,
@@ -21,9 +21,9 @@ import { join } from 'path';
       dir: join(__dirname, 'templates'),
       adapter: new HandlebarsAdapter(),
       options: {
-        strict: true
-      }
-    }
+        strict: true,
+      },
+    },
   })],
   providers: [MailService],
   exports: [MailService],

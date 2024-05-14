@@ -15,13 +15,13 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @Injectable()
 export class AuthService {
-  constructor(
+  constructor (
     private readonly usersRepository: UsersRepository, 
     private readonly mailService: MailService,
     private readonly jwtService: JwtService
   ) {}
 
-  async register(dto: RegisterDto) {
+  async register (dto: RegisterDto) {
     const user = await this.usersRepository.findByEmail(dto.email);
     if (user) {
       throw new ConflictException('A user with this email already exists');
@@ -38,7 +38,7 @@ export class AuthService {
     return this.usersRepository.create(dto);
   }
 
-  async login(dto: LoginDto) {
+  async login (dto: LoginDto) {
     const user = await this.usersRepository.findByEmail(dto.email);
     if (!user) {
       throw new NotFoundException(`No user found for email: ${dto.email}`);
@@ -58,7 +58,7 @@ export class AuthService {
     return tokens;
   }
 
-  async verifyEmail(dto: VerifyEmailDto) {
+  async verifyEmail (dto: VerifyEmailDto) {
     const user = await this.usersRepository.findByVerifiedTokenContains(dto.token, 'email');
     if (!user) {
       throw new BadRequestException(`Invalid token: ${dto.token}`);
@@ -72,13 +72,13 @@ export class AuthService {
     return;
   }
 
-  async refreshToken(dto: RefreshTokenDto, req: Request) {
+  async refreshToken (dto: RefreshTokenDto, req: Request) {
     const token = this.extractTokenFromHeader(req);
     if (!token) {
       throw new UnauthorizedException();
     }
     await this.jwtService.verifyAsync(token, { secret: process.env.JWT_SECRET })
-      .catch(err => {
+      .catch((err) => {
         if (err.name !== 'TokenExpiredError') throw new UnauthorizedException('Bad access token');
       });
     const user = await this.usersRepository.findByRefreshToken(dto.refreshToken);
@@ -94,7 +94,7 @@ export class AuthService {
     await this.usersRepository.update(user.id, { refreshToken: tokens.refreshToken });
     return tokens;
   }
-  async sendResetPassword(dto: SendResetDto) {
+  async sendResetPassword (dto: SendResetDto) {
     const user = await this.usersRepository.findByEmail(dto.email);
     if (!user) {
       throw new NotFoundException(`No user found for email: ${dto.email}`);
@@ -110,7 +110,7 @@ export class AuthService {
     return this.usersRepository.update(user.id, { verifiedToken });
   }
 
-  async resetPassword(dto: ResetPasswordDto) {
+  async resetPassword (dto: ResetPasswordDto) {
     const user = await this.usersRepository.findByVerifiedTokenContains(dto.token, 'password');
     if (!user) {
       throw new BadRequestException(`Invalid token: ${dto.token}`);
@@ -125,7 +125,7 @@ export class AuthService {
     return this.usersRepository.update(user.id, { verifiedToken: null, password: dto.password });
   }
 
-  async resendVerifyEmail(dto: LoginDto) {
+  async resendVerifyEmail (dto: LoginDto) {
     const user = await this.usersRepository.findByEmail(dto.email);
     if (!user) {
       throw new NotFoundException(`No user found for email: ${dto.email}`);
@@ -145,25 +145,25 @@ export class AuthService {
     return this.usersRepository.update(user.id, { verifiedToken });
   }
 
-  private getTokens(userId: string, email: string, password: string) {
+  private getTokens (userId: string, email: string, password: string) {
     return {
       accessToken: this.jwtService.sign({
         userId,
         hash: this.getHash(email, password),
       }),
-      refreshToken: uuidv4()
-    }
+      refreshToken: uuidv4(),
+    };
   }
 
-  getHash(...params) {
+  getHash (...params) {
     return crypto.createHash('md5').update(params.join()).digest('hex');
   }
 
-  async hashPassword(password: string) {
-    return bcrypt.hash(password, await bcrypt.genSalt(10))
+  async hashPassword (password: string) {
+    return bcrypt.hash(password, await bcrypt.genSalt(10));
   }
 
-  extractTokenFromHeader(request: Request): string | undefined {
+  extractTokenFromHeader (request: Request): string | undefined {
     const [type, token] = request.headers.authorization?.split(' ') ?? [];
     return type === 'Bearer' ? token: undefined;
   }

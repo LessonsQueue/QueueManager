@@ -8,20 +8,20 @@ import { AuthService } from '../auth/auth.service';
 
 @Injectable()
 export class UsersService {
-  constructor(
+  constructor (
     private readonly usersRepository: UsersRepository, 
     private readonly mailService: MailService, 
     private readonly authService: AuthService,
   ) {}
 
-  async getNotApprovedUsers(req: Request) {
+  async getNotApprovedUsers (req: Request) {
     if (!await this.isAdmin(req['user'].userId)) {
       throw new ForbiddenException();
     }
     return this.usersRepository.findAllNotApproved();
   }
 
-  async approveUser(dto: ApproveUserDto, req: Request) {
+  async approveUser (dto: ApproveUserDto, req: Request) {
     if (!await this.isAdmin(req['user'].userId)) {
       throw new ForbiddenException();
     }
@@ -37,16 +37,16 @@ export class UsersService {
     return this.mailService.sendApprovedUser(approvedUser.email, loginUrl, approvedUser.firstName, approvedUser.lastName);
   }
 
-  getMyInfo(req: Request) {
+  getMyInfo (req: Request) {
     return this.usersRepository.findById(req['user'].userId);
   }
 
-  async changePassword(dto: ChangePasswordDto, req: Request) {
+  async changePassword (dto: ChangePasswordDto, req: Request) {
     const hashedPassword = await this.authService.hashPassword(dto.password);
     return this.usersRepository.update(req['user'].userId, { password: hashedPassword });
   }
   
-  private async isAdmin(userId: string) {
+  private async isAdmin (userId: string) {
     const userAdmin = await this.usersRepository.findById(userId);
     return userAdmin.admin;
   }

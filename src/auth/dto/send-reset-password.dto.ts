@@ -1,8 +1,8 @@
-import { IsEmail, IsNotEmpty, IsString, Validate } from "class-validator";
+import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
 
 export class SendResetDto {
   @IsString()
   @IsNotEmpty()
   @IsEmail()
-  email: string;
+    email: string;
 }

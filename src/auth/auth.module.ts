@@ -16,7 +16,7 @@ import { AuthGuard } from './guards/auth.guard';
       global: true,
       secret: process.env.JWT_SECRET,
       signOptions: { expiresIn: '15m' },
-    })
+    }),
   ],
   controllers: [AuthController],
   providers: [
@@ -24,7 +24,7 @@ import { AuthGuard } from './guards/auth.guard';
     UsersRepository,
     {
       provide: APP_GUARD,
-      useClass: AuthGuard
+      useClass: AuthGuard,
     },
   ],
 })

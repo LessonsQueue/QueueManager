@@ -3,9 +3,9 @@ import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class MailService {
-  constructor(private readonly mailerService: MailerService) {}
+  constructor (private readonly mailerService: MailerService) {}
 
-  sendVerifyEmail(email: string, url: string) {
+  sendVerifyEmail (email: string, url: string) {
     this.mailerService.sendMail({
       to: email,
       subject: 'Welcome to Nice App! Confirm your Email',
@@ -16,7 +16,7 @@ export class MailService {
     });
   }
 
-  sendResetPassword(email: string, url: string) {
+  sendResetPassword (email: string, url: string) {
     this.mailerService.sendMail({
       to: email,
       subject: 'Reset password',

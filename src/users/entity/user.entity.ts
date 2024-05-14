@@ -1,5 +1,5 @@
-import { User } from "@prisma/client";
-import { Exclude } from "class-transformer";
+import { User } from '@prisma/client';
+import { Exclude } from 'class-transformer';
 
 export class UserEntity implements User {
   id: string;
@@ -8,27 +8,27 @@ export class UserEntity implements User {
   lastName: string;
   
   @Exclude()
-  password: string;
+    password: string;
 
   @Exclude()
-  admin: boolean;
+    admin: boolean;
 
   @Exclude()
-  approved: boolean;
+    approved: boolean;
 
   @Exclude()
-  createdAt: Date;
+    createdAt: Date;
 
   @Exclude()
-  updatedAt: Date;
+    updatedAt: Date;
 
   @Exclude()
-  refreshToken: string;
+    refreshToken: string;
 
   @Exclude()
-  verifiedToken: string;
+    verifiedToken: string;
   
-  constructor(partial: Partial<UserEntity>) {
+  constructor (partial: Partial<UserEntity>) {
     Object.assign(this, partial);
   }
 }

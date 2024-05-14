@@ -1,23 +1,23 @@
-import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from "@nestjs/common";
-import { Reflector } from "@nestjs/core";
-import { JwtService } from "@nestjs/jwt";
-import { AuthService } from "../auth.service";
-import { IS_PUBLIC_KEY } from "../../utils/decorators/skip-auth.decorator";
-import { UsersRepository } from "../../repositories/users.repository";
+import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
+import { JwtService } from '@nestjs/jwt';
+import { AuthService } from '../auth.service';
+import { IS_PUBLIC_KEY } from '../../utils/decorators/skip-auth.decorator';
+import { UsersRepository } from '../../repositories/users.repository';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(
+  constructor (
     private readonly jwtService: JwtService, 
     private readonly reflector: Reflector,
     private readonly usersRepository: UsersRepository,
     private readonly authService: AuthService,
   ) {}
   
-  async canActivate(context: ExecutionContext): Promise<boolean> {
+  async canActivate (context: ExecutionContext): Promise<boolean> {
     const isSkipAuth = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
       context.getHandler(),
-      context.getClass()
+      context.getClass(),
     ]);
     if (isSkipAuth) return true;
 

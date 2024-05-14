@@ -1,50 +1,50 @@
-import { Injectable } from "@nestjs/common";
-import { PrismaService } from "../prisma/prisma.service";
-import { RegisterDto } from "../auth/dto/register.dto";
-import { User } from "@prisma/client";
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+import { RegisterDto } from '../auth/dto/register.dto';
+import { User } from '@prisma/client';
 
 @Injectable()
 export class UsersRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor (private readonly prisma: PrismaService) {}
 
-  findByEmail(email: string) {
+  findByEmail (email: string) {
     return this.prisma.user.findUnique({
-      where: { email }
+      where: { email },
     });
   }
 
-  findById(id: string) {
+  findById (id: string) {
     return this.prisma.user.findUnique({
-      where: { id }
+      where: { id },
     });
   }
 
-  findByRefreshToken(refreshToken: string) {
+  findByRefreshToken (refreshToken: string) {
     return this.prisma.user.findFirst({
-      where: { refreshToken }
+      where: { refreshToken },
     });
   }
 
-  findByVerifiedTokenContains(token: string, type: string) {
+  findByVerifiedTokenContains (token: string, type: string) {
     return this.prisma.user.findFirst({
       where: {
         verifiedToken: {
-          contains: `${token}::${type}::`
-        }
-      }
+          contains: `${token}::${type}::`,
+        },
+      },
     });
   }
 
-  create(dto: RegisterDto) {
+  create (dto: RegisterDto) {
     return this.prisma.user.create({
-      data: dto
+      data: dto,
     });
   }
 
-  update(id: string, data: Partial<User>) {
+  update (id: string, data: Partial<User>) {
     return this.prisma.user.update({
       where: { id },
-      data: data
+      data: data,
     });
   }
 }

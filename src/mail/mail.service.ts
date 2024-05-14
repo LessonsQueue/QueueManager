@@ -26,4 +26,17 @@ export class MailService {
       },
     });
   }
+
+  sendApprovedUser (email: string, url: string, firstName: string, lastName: string) {
+    this.mailerService.sendMail({
+      to: email,
+      subject: 'Your are approved',
+      template: './reset-pass',
+      context: {
+        url,
+        firstName,
+        lastName,
+      },
+    });
+  }
 }

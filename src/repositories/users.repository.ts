@@ -25,7 +25,7 @@ export class UsersRepository {
     });
   }
 
-  findAllNotApproved() {
+  findAllNotApproved () {
     return this.prisma.user.findMany({
       where: { approved: false },
     });

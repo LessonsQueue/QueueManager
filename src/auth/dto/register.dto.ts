@@ -1,10 +1,11 @@
-import { IsEmail, IsNotEmpty, IsString, MinLength, Validate } from "class-validator";
+import { IsEmail, IsNotEmpty, IsString, Matches, MinLength, Validate } from "class-validator";
 import { IsEqualPasswordConstraint } from "../../utils/decorators/validate-passwords-equals.decorator";
 
 export class RegisterDto {
   @IsString()
   @IsNotEmpty()
   @IsEmail()
+  @Matches(/^[a-zA-Z0-9._%+-]+@lll\.kpi\.ua$/, {message: 'email must be in @lll.kpu.ua domain'})
   email: string;
 
   @IsString()

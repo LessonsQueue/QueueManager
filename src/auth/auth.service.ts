@@ -27,14 +27,12 @@ export class AuthService {
       throw new ConflictException('A user with this email already exists');
     }
     delete dto.passwordRepeat;
-    const hashedPassword = await this.hashPassword(dto.password);
-    dto.password = hashedPassword;
+    dto.password = await this.hashPassword(dto.password);
     const token = uuidv4();
     const expireDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
-    const verifiedToken = `${token}::email::${expireDate}`;
-    dto['verifiedToken'] = verifiedToken;
+    dto['verifiedToken'] = `${token}::email::${expireDate}`;
     const url = process.env.FRONTEND_DOMAIN + 'verify-email/' + token;
-    await this.mailService.sendVerifyEmail(dto.email, url);
+    this.mailService.sendVerifyEmail(dto.email, url);
     return this.usersRepository.create(dto);
   }
 
@@ -106,7 +104,7 @@ export class AuthService {
     const expireDate = new Date(Date.now() + 15 * 60 * 1000);
     const verifiedToken = `${token}::password::${expireDate}`;
     const url = process.env.FRONTEND_DOMAIN + 'reset-password/' + token;
-    await this.mailService.sendResetPassword(dto.email, url);
+    this.mailService.sendResetPassword(dto.email, url);
     return this.usersRepository.update(user.id, { verifiedToken });
   }
 
@@ -120,8 +118,7 @@ export class AuthService {
     if (new Date() > new Date(expirationDate)) {
       throw new BadRequestException('Password verification token is expired');
     }
-    const hashedPassword = await this.hashPassword(dto.password);
-    dto.password = hashedPassword;
+    dto.password = await this.hashPassword(dto.password);
     return this.usersRepository.update(user.id, { verifiedToken: null, password: dto.password });
   }
 
@@ -141,7 +138,7 @@ export class AuthService {
     const expireDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
     const verifiedToken = `${token}::email::${expireDate}`;
     const url = process.env.FRONTEND_DOMAIN + 'verify-email/' + token;
-    await this.mailService.sendVerifyEmail(user.email, url);
+    this.mailService.sendVerifyEmail(user.email, url);
     return this.usersRepository.update(user.id, { verifiedToken });
   }
 
@@ -155,7 +152,7 @@ export class AuthService {
     };
   }
 
-  getHash (...params) {
+  getHash (...params: string[]) {
     return crypto.createHash('md5').update(params.join()).digest('hex');
   }
 

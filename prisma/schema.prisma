@@ -21,8 +21,10 @@ model User {
   lastName      String
   admin         Boolean  @default(false)
   approved      Boolean  @default(false)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
   refreshToken  String?  @unique
   verifiedToken String?  @unique
+
+  @@map("users")
 }

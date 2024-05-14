@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Patch, Post, Req } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Patch, Post, Req, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -6,7 +6,9 @@ import { UserEntity } from '../users/entity/user.entity';
 import { Public } from '../utils/decorators/skip-auth.decorator';
 import { VerifyEmailDto } from './dto/verify-email.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
-import { Request } from 'express';
+import { Request, Response } from 'express';
+import { SendResetDto } from './dto/send-reset-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -42,5 +44,19 @@ export class AuthController {
   @Patch('refresh-token')
   refreshToken(@Body() dto: RefreshTokenDto, @Req() req: Request) {
     return this.authService.refreshToken(dto, req);
+  }
+
+  @Public()
+  @Post('send-reset-password')
+  async sendResetPassword(@Body() dto: SendResetDto) {
+    await this.authService.sendResetPassword(dto);
+    return { message: 'check your email' };
+  }
+
+  @Public()
+  @Patch('reset-password')
+  async resetPassword(@Body() dto: ResetPasswordDto) {
+    await this.authService.resetPassword(dto);
+    return { message: 'password is changed' };
   }
 }

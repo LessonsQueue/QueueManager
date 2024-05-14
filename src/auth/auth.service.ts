@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { RegisterDto } from './dto/register.dto';
 import { UsersRepository } from '../repositories/users.repository';
 import { v4 as uuidv4 } from 'uuid';
@@ -8,6 +8,8 @@ import { MailService } from '../mail/mail.service';
 import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
+import { VerifyEmailDto } from './dto/verify-email.dto';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 
 @Injectable()
 export class AuthService {
@@ -48,6 +50,43 @@ export class AuthService {
     const isPasswordsValid = await bcrypt.compare(dto.password, user.password);
     if (!isPasswordsValid) {
       throw new UnauthorizedException('Invalid password');
+    }
+    const tokens = this.getTokens(user.id, user.email, user.password);
+    await this.usersRepository.update(user.id, { refreshToken: tokens.refreshToken });
+    return tokens;
+  }
+
+  async verifyEmail(dto: VerifyEmailDto) {
+    const user = await this.usersRepository.findByVerifiedTokenContains(dto.token, 'email');
+    if (!user) {
+      throw new BadRequestException(`Invalid token: ${dto.token}`);
+    }
+    const verifiedTokenSplited = user.verifiedToken.split('::');
+    const expirationDate = verifiedTokenSplited[verifiedTokenSplited.length - 1];
+    if (new Date() > new Date(expirationDate)) {
+      throw new BadRequestException('Email verification token is expired');
+    }
+    await this.usersRepository.update(user.id, { verifiedToken: null });
+    return;
+  }
+
+  async refreshToken(dto: RefreshTokenDto, req: Request) {
+    const token = this.extractTokenFromHeader(req);
+    if (!token) {
+      throw new UnauthorizedException();
+    }
+    await this.jwtService.verifyAsync(token, { secret: process.env.JWT_SECRET })
+      .catch(err => {
+        if (err.name !== 'TokenExpiredError') throw new UnauthorizedException('Bad access token');
+      });
+    const user = await this.usersRepository.findByRefreshToken(dto.refreshToken);
+    if (!user) {
+      throw new UnauthorizedException('Bad refresh token');
+    }
+    const payload = this.jwtService.decode(token);
+    const hash = this.getHash(user.email, user.password);
+    if (hash !== payload.hash) {
+      throw new UnauthorizedException('Login with new credentials');
     }
     const tokens = this.getTokens(user.id, user.email, user.password);
     await this.usersRepository.update(user.id, { refreshToken: tokens.refreshToken });

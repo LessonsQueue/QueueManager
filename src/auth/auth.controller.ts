@@ -1,9 +1,12 @@
-import { BadRequestException, Body, Controller, Post } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Patch, Post, Req } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { UserEntity } from '../users/entity/user.entity';
 import { Public } from '../utils/decorators/skip-auth.decorator';
+import { VerifyEmailDto } from './dto/verify-email.dto';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { Request } from 'express';
 
 @Controller('auth')
 export class AuthController {
@@ -29,5 +32,15 @@ export class AuthController {
     return tokens;
   }
 
+  @Public()
+  @Patch('verify-email')
+  verifyEmail(@Body() dto: VerifyEmailDto) {
+    return this.authService.verifyEmail(dto);
+  }
 
+  @Public()
+  @Patch('refresh-token')
+  refreshToken(@Body() dto: RefreshTokenDto, @Req() req: Request) {
+    return this.authService.refreshToken(dto, req);
+  }
 }

@@ -10,6 +10,8 @@ import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { VerifyEmailDto } from './dto/verify-email.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { SendResetDto } from './dto/send-reset-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @Injectable()
 export class AuthService {
@@ -91,6 +93,36 @@ export class AuthService {
     const tokens = this.getTokens(user.id, user.email, user.password);
     await this.usersRepository.update(user.id, { refreshToken: tokens.refreshToken });
     return tokens;
+  }
+  async sendResetPassword(dto: SendResetDto) {
+    const user = await this.usersRepository.findByEmail(dto.email);
+    if (!user) {
+      throw new NotFoundException(`No user found for email: ${dto.email}`);
+    }
+    if (user.verifiedToken !== null && user.verifiedToken.includes('::email::')) {
+      throw new UnauthorizedException('Verify email');
+    }
+    const token = uuidv4();
+    const expireDate = new Date(Date.now() + 15 * 60 * 1000);
+    const verifiedToken = `${token}::password::${expireDate}`;
+    const url = process.env.FRONTEND_DOMAIN + 'reset-password/' + token;
+    await this.mailService.sendResetPassword(dto.email, url);
+    return this.usersRepository.update(user.id, { verifiedToken });
+  }
+
+  async resetPassword(dto: ResetPasswordDto) {
+    const user = await this.usersRepository.findByVerifiedTokenContains(dto.token, 'password');
+    if (!user) {
+      throw new BadRequestException(`Invalid token: ${dto.token}`);
+    }
+    const verifiedTokenSplited = user.verifiedToken.split('::');
+    const expirationDate = verifiedTokenSplited[verifiedTokenSplited.length - 1];
+    if (new Date() > new Date(expirationDate)) {
+      throw new BadRequestException('Password verification token is expired');
+    }
+    const hashedPassword = await this.hashPassword(dto.password);
+    dto.password = hashedPassword;
+    return this.usersRepository.update(user.id, { verifiedToken: null, password: dto.password });
   }
 
   private getTokens(userId: string, email: string, password: string) {

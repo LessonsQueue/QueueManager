@@ -1,8 +1,9 @@
-import { Body, Controller, Get, Post, Req } from '@nestjs/common';
+import { Body, Controller, Get, Patch, Post, Req } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { Request } from 'express';
 import { ApproveUserDto } from './dto/approve-user.dto';
 import { UserEntity } from './entity/user.entity';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 @Controller('users')
 export class UsersController {
@@ -24,5 +25,11 @@ export class UsersController {
   async getMyInfo(@Req() req: Request) {
     const user = await this.usersService.getMyInfo(req);
     return new UserEntity(user);
+  }
+
+  @Patch('change-pass')
+  async changePassword(@Body() dto: ChangePasswordDto, @Req() req: Request) {
+    await this.usersService.changePassword(dto, req);
+    return { message: 'Your password is changed' };
   }
 }

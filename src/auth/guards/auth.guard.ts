@@ -1,7 +1,6 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import { JwtService } from "@nestjs/jwt";
-import { PrismaService } from "../../prisma/prisma.service";
 import { AuthService } from "../auth.service";
 import { IS_PUBLIC_KEY } from "../../utils/decorators/skip-auth.decorator";
 import { UsersRepository } from "../../repositories/users.repository";

@@ -13,6 +13,12 @@ export class UsersRepository {
     });
   }
 
+  findById(id: string) {
+    return this.prisma.user.findUnique({
+      where: { id }
+    });
+  }
+
   create(dto: RegisterDto) {
     return this.prisma.user.create({
       data: dto

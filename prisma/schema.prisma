@@ -14,17 +14,52 @@ datasource db {
 }
 
 model User {
-  id            String   @id @default(uuid())
-  email         String   @unique
+  id            String    @id @default(uuid())
+  email         String    @unique
   password      String
   firstName     String
   lastName      String
-  admin         Boolean  @default(false)
-  approved      Boolean  @default(false)
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
-  refreshToken  String?  @unique
-  verifiedToken String?  @unique
+  admin         Boolean   @default(false)
+  approved      Boolean   @default(false)
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  refreshToken  String?   @unique
+  verifiedToken String?   @unique
+  queues        Queue[]
+  labs          LabWork[]
 
   @@map("users")
+}
+
+model LabWork {
+  id          String   @id @default(uuid())
+  userId      String   @unique @map("user_id")
+  name        String
+  desrciption String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  queues Queue[]
+}
+
+enum QueueStatus {
+  PENDING
+  COMPLETED
+  SKIPPED
+}
+
+model Queue {
+  id        String      @id @default(uuid())
+  userId    String      @unique @map("user_id")
+  labId     String      @map("lab_id")
+  position  Int         @unique
+  status    QueueStatus @default(PENDING)
+  createdAt DateTime    @default(now()) @map("created_at")
+  updatedAt DateTime    @updatedAt @map("updated_at")
+
+  user User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lab  LabWork @relation(fields: [labId], references: [id], onDelete: Cascade)
+
+  @@map("queues")
 }

@@ -14,33 +14,22 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(uuid())
-  email         String    @unique
+  id            String   @id @default(uuid())
+  email         String   @unique
   password      String
   firstName     String
   lastName      String
-  admin         Boolean   @default(false)
-  approved      Boolean   @default(false)
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
-  refreshToken  String?   @unique
-  verifiedToken String?   @unique
-  queues        Queue[]
-  labs          LabWork[]
+  admin         Boolean  @default(false)
+  approved      Boolean  @default(false)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  refreshToken  String?  @unique
+  verifiedToken String?  @unique
+
+  createdQueues Queue[]
+  joinedQueues  UserQueue[]
 
   @@map("users")
-}
-
-model LabWork {
-  id          String   @id @default(uuid())
-  userId      String   @unique @map("user_id")
-  name        String
-  desrciption String?
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-
-  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  queues Queue[]
 }
 
 enum QueueStatus {
@@ -51,15 +40,28 @@ enum QueueStatus {
 
 model Queue {
   id        String      @id @default(uuid())
-  userId    String      @unique @map("user_id")
+  creatorId String      @map("creator_id")
   labId     String      @map("lab_id")
-  position  Int         @unique
   status    QueueStatus @default(PENDING)
   createdAt DateTime    @default(now()) @map("created_at")
   updatedAt DateTime    @updatedAt @map("updated_at")
 
-  user User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  lab  LabWork @relation(fields: [labId], references: [id], onDelete: Cascade)
+  creator      User        @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  participants UserQueue[]
 
   @@map("queues")
+}
+
+model UserQueue {
+  userId  String @map("user_id")
+  queueId String @map("queue_id")
+
+  createdAt DateTime? @default(now()) @map("created_at")
+  updatedAt DateTime? @updatedAt @map("updated_at")
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  queue Queue @relation(fields: [queueId], references: [id], onDelete: Cascade)
+
+  @@id([queueId, userId])
+  @@map("user_queues")
 }

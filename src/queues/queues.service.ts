@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { QueuesRepository } from '../repositories/queues.repository';
 import { Queue, UserQueue } from '@prisma/client';
 import { CreateQueueDto } from './dto/create-queue.dto';
@@ -35,7 +35,13 @@ export class QueuesService {
 
   async joinQueue (queueId: string, req: Request): Promise<UserQueue> {
     const queue = await this.findQueueById(queueId);
+    if (queue.status !== 'PENDING') throw new ForbiddenException('You cannot join the queue');
+
     const userId = req['user'].userId;
+
+    const userInQueue = await this.queueRepository.findUserInQueue(queue.id, userId);
+    if (userInQueue) throw new ConflictException(`User with id ${userId} has already been found in queue`);
+
     return this.queueRepository.addUserToQueue(queue.id, userId);
   }
 
@@ -58,6 +64,16 @@ export class QueuesService {
     if (!userInQueue) throw new NotFoundException(`User with id ${removedUserId} was not found in queue`);
 
     return this.queueRepository.removeUserFromQueue(queue.id, removedUserId);
+  }
+
+  async resumeQueueStatus (queueId: string, req: Request) {
+    const isAdmin = await this.userService.isAdmin(req['user'].userId);
+    if (!isAdmin) throw new ForbiddenException('You do not have permission to perform this action');
+
+    const queue = await this.findQueueById(queueId);
+    if (queue.status === 'PENDING') throw new ConflictException(`Queue ${queueId} already has status 'PENDING'`);
+
+    return await this.queueRepository.updateQueueStatus(queueId, 'PENDING');
   }
 
 }

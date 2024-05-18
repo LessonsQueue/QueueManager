@@ -23,4 +23,41 @@ export class QueuesRepository {
       where: { id },
     });
   }
+
+  async deleteById (id: string) {
+    return this.prisma.queue.delete({
+      where: { id },
+    });
+  }
+
+  async addUserToQueue (queueId: string, userId: string) {
+    return this.prisma.userQueue.create({
+      data: {
+        queueId,
+        userId,
+      },
+    });
+  }
+
+  async removeUserFromQueue (queueId: string, userId: string) {
+    return this.prisma.userQueue.delete({
+      where: {
+        queueId_userId: {
+          queueId,
+          userId,
+        },
+      },
+    });
+  }
+
+  async findUserInQueue (queueId: string, userId: string) {
+    return this.prisma.userQueue.findUnique({
+      where: {
+        queueId_userId: {
+          queueId,
+          userId,
+        },
+      },
+    });
+  }
 }

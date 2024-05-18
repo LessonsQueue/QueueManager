@@ -46,7 +46,7 @@ export class UsersService {
     return this.usersRepository.update(req['user'].userId, { password: hashedPassword });
   }
   
-  private async isAdmin (userId: string) {
+  async isAdmin (userId: string) {
     const userAdmin = await this.usersRepository.findById(userId);
     return userAdmin.admin;
   }

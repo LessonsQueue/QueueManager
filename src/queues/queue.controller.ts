@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Req } from '@nestjs/common';
 import { QueuesService } from './queues.service';
 import { CreateQueueDto } from './dto/create-queue.dto';
 import { Public } from '../utils/decorators/skip-auth.decorator';
@@ -41,5 +41,11 @@ export class QueuesController {
     @Req() req: Request,
   ) {
     return this.queuesService.removeUserFromQueue(queueId, req, removedUserId);
+  }
+
+  @Patch(':id/resume-status')
+  async resumeQueueStatus (@Param('id') queueId: string, @Req() req: Request) {
+    await this.queuesService.resumeQueueStatus(queueId, req);
+    return { message: `Queue with id ${queueId} has changed its status to 'PENDING'` };
   }
 }

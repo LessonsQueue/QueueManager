@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateQueueDto } from '../queues/dto/create-queue.dto';
+import { QueueStatus } from '@prisma/client';
 
 @Injectable()
 
@@ -58,6 +59,13 @@ export class QueuesRepository {
           userId,
         },
       },
+    });
+  }
+
+  async updateQueueStatus (queueId: string, status: QueueStatus): Promise<void> {
+    await this.prisma.queue.update({
+      where: { id: queueId },
+      data: { status },
     });
   }
 }

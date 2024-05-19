@@ -9,8 +9,8 @@ export class QueuesController {
   constructor (private readonly queuesService: QueuesService) {}
 
   @Post()
-  async createQueue (@Body() createQueueDto: CreateQueueDto, @Req() req: Request) {
-    return this.queuesService.createQueue(createQueueDto, req);
+  async createQueue (@Body() createQueueDto: CreateQueueDto) {
+    return this.queuesService.createQueue(createQueueDto);
   }
 
   @Public()

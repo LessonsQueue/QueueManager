@@ -12,10 +12,7 @@ export class QueuesService {
     private readonly userService: UsersService,
   ) {}
   
-  async createQueue (queue: CreateQueueDto, req: Request): Promise<Queue> {
-    const isAdmin = await this.userService.isAdmin(req['user'].userId);
-    if (!isAdmin) throw new ForbiddenException('You do not have permission to perform this action');
-
+  async createQueue (queue: CreateQueueDto): Promise<Queue> {
     return this.queueRepository.create(queue);
   }
 
@@ -26,10 +23,14 @@ export class QueuesService {
   }
 
   async deleteQueueById (id: string, req: Request): Promise<Queue> {
-    const isAdmin = await this.userService.isAdmin(req['user'].userId);
-    if (!isAdmin) throw new ForbiddenException('You do not have permission to perform this action');
+    const userId = req['user'].userId;
+    const isAdmin = await this.userService.isAdmin(userId);
 
     const queue = await this.findQueueById(id);
+    if (!isAdmin && queue.creatorId !== userId) {
+      throw new ForbiddenException('You do not have permission to delete this queue');
+    }
+
     return this.queueRepository.deleteById(queue.id);
   }
 
@@ -71,7 +72,7 @@ export class QueuesService {
     if (!isAdmin) throw new ForbiddenException('You do not have permission to perform this action');
 
     const queue = await this.findQueueById(queueId);
-    if (queue.status === 'PENDING') throw new ConflictException(`Queue ${queueId} already has status 'PENDING'`);
+    if (queue.status === 'PENDING') throw new ConflictException(`Queue ${queueId} has already had status 'PENDING'`);
 
     return await this.queueRepository.updateQueueStatus(queueId, 'PENDING');
   }

@@ -275,4 +275,201 @@ describe('QueuesService', () => {
       await expect(queuesService.joinQueue(queue.id, req)).rejects.toThrow(ConflictException);
     });
   });
+
+  describe('leaveQueue', () => {
+    it('should allow user to leave a queue', async () => {
+      const user = await prismaService.user.create({
+        data: {
+          email: 'joined@lll.kpi.ua',
+          password: 'joined123',
+          firstName: 'Marco',
+          lastName: 'Polo',
+          admin: false,
+          approved: true,
+        },
+      });
+
+      const req = {
+        user: {
+          userId: user.id,
+        },
+      } as unknown as Request;
+
+      const queue = await queuesService.createQueue({
+        creatorId: user.id,
+        labId: 'lab9',
+      });
+
+      await queuesService.joinQueue(queue.id, req);
+
+      const leavedQueue = await queuesService.leaveQueue(queue.id, req);
+      expect(leavedQueue).toStrictEqual(
+        {
+          updatedAt: expect.any(Date),
+          createdAt: expect.any(Date),
+          queueId: queue.id,
+          userId: queue.creatorId,
+        }
+      );
+    });
+
+    it('should throw NotFoundException if the user is not in the queue', async () => {
+      const user = await prismaService.user.create({
+        data: {
+          email: 'john_lennon@lll.kpi.ua',
+          password: 'lenn81280',
+          firstName: 'John',
+          lastName: 'Lennon',
+          admin: false,
+          approved: true,
+        },
+      });
+
+      const req = {
+        user: {
+          userId: user.id,
+        },
+      } as unknown as Request;
+
+      const queue = await queuesService.createQueue({
+        creatorId: user.id,
+        labId: 'lab10',
+      });
+
+      await expect(queuesService.leaveQueue(queue.id, req)).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('removeUserFromQueue', () => {
+    it('should allow admin to remove user from queue ', async () => {
+      const admin = await prismaService.user.create({
+        data: {
+          email: 'admin@lll.kpi.ua',
+          password: 'admin123',
+          firstName: 'Admin',
+          lastName: 'Smith',
+          admin: true,
+          approved: true,
+        },
+      });
+
+      const user = await prismaService.user.create({
+        data: {
+          email: 'user@lll.kpi.ua',
+          password: 'user123',
+          firstName: 'John',
+          lastName: 'Doe',
+          admin: false,
+          approved: true,
+        },
+      });
+
+      const req = {
+        user: {
+          userId: admin.id,
+        },
+      } as unknown as Request;
+
+      const queue = await queuesService.createQueue({
+        creatorId: user.id,
+        labId: 'lab11',
+      });
+
+      await queuesService.joinQueue(queue.id, {
+        user: {
+          userId: user.id,
+        },
+      } as unknown as Request);
+
+      const removedUserFromQueue = await queuesService.removeUserFromQueue(queue.id, req, user.id);
+      expect(removedUserFromQueue).toStrictEqual(
+        {
+          updatedAt: expect.any(Date),
+          createdAt: expect.any(Date),
+          queueId: queue.id,
+          userId: queue.creatorId,
+        }
+      );
+    });
+
+    it('should throw ForbiddenException if user is not admin', async () => {
+      const user = await prismaService.user.create({
+        data: {
+          email: 'user@lll.kpi.ua',
+          password: 'user123',
+          firstName: 'John',
+          lastName: 'Doe',
+          admin: false,
+          approved: true,
+        },
+      });
+
+      const userToRemove = await prismaService.user.create({
+        data: {
+          email: 'removed@lll.kpi.ua',
+          password: 'removed123',
+          firstName: 'Paul',
+          lastName: 'REM',
+          admin: false,
+          approved: true,
+        },
+      });
+
+      const req = {
+        user: {
+          userId: user.id,
+        },
+      } as unknown as Request;
+
+      const queue = await queuesService.createQueue({
+        creatorId: user.id,
+        labId: 'lab12',
+      });
+
+      await queuesService.joinQueue(queue.id, {
+        user: {
+          userId: userToRemove.id,
+        },
+      } as unknown as Request);
+
+      await expect(queuesService.removeUserFromQueue(queue.id, req, userToRemove.id)).rejects.toThrow(ForbiddenException);
+    });
+
+    it('should throw NotFoundException if the user is not in the queue, while removing this user', async () => {
+      const admin = await prismaService.user.create({
+        data: {
+          email: 'MaSach@lll.kpi.ua',
+          password: 'next_monitor6565',
+          firstName: 'Mxee',
+          lastName: 'Machok',
+          admin: true,
+          approved: true,
+        },
+      });
+
+      const user = await prismaService.user.create({
+        data: {
+          email: 'user@lll.kpi.ua',
+          password: 'user123',
+          firstName: 'John',
+          lastName: 'Doe',
+          admin: false,
+          approved: true,
+        },
+      });
+
+      const req = {
+        user: {
+          userId: admin.id,
+        },
+      } as unknown as Request;
+
+      const queue = await queuesService.createQueue({
+        creatorId: user.id,
+        labId: 'lab13',
+      });
+
+      await expect(queuesService.leaveQueue(queue.id, req)).rejects.toThrow(NotFoundException);
+    });
+  });
 });

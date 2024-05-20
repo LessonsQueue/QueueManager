@@ -9,7 +9,7 @@ import { UsersService } from '../users/users.service';
 import { UsersRepository } from '../repositories/users.repository';
 import { UsersModule } from '../users/users.module';
 import { CreateQueueDto } from './dto/create-queue.dto';
-import { ForbiddenException, NotFoundException } from '@nestjs/common';
+import { ConflictException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { Request } from 'express';
 
 describe('QueuesService', () => {
@@ -210,7 +210,14 @@ describe('QueuesService', () => {
       });
 
       const joinedQueue = await queuesService.joinQueue(queue.id, req);
-      expect(joinedQueue).toEqual(queue);
+      expect(joinedQueue).toStrictEqual(
+        {
+          updatedAt: expect.any(Date),
+          createdAt: expect.any(Date),
+          queueId: queue.id,
+          userId: queue.creatorId,
+        }
+      );
     });
 
     it('should throw ForbiddenException if the queue status is not PENDING', async () => {
@@ -240,13 +247,13 @@ describe('QueuesService', () => {
       await expect(queuesService.joinQueue(queue.id, req)).rejects.toThrow(ForbiddenException);
     });
 
-    it('should throw ForbiddenException if the queue status is not PENDING', async () => {
+    it('should throw ConflictException if the the user has already been added to the queue', async () => {
       const user = await prismaService.user.create({
         data: {
-          email: 'newuser@lll.kpi.ua',
-          password: 'aboba123',
-          firstName: 'John',
-          lastName: 'Bandera',
+          email: 'olduser@lll.kpi.ua',
+          password: 'papich123',
+          firstName: 'Vilaliy',
+          lastName: 'Zahl',
           admin: false,
           approved: true,
         },
@@ -260,12 +267,12 @@ describe('QueuesService', () => {
 
       const queue = await queuesService.createQueue({
         creatorId: user.id,
-        labId: 'lab7',
-        status: 'SKIPPED',
+        labId: 'lab8',
+        status: 'PENDING',
       });
 
-      await expect(queuesService.joinQueue(queue.id, req)).rejects.toThrow(ForbiddenException);
+      await queuesService.joinQueue(queue.id, req);
+      await expect(queuesService.joinQueue(queue.id, req)).rejects.toThrow(ConflictException);
     });
-
   });
 });

@@ -9,7 +9,7 @@ import { UsersService } from '../users/users.service';
 import { UsersRepository } from '../repositories/users.repository';
 import { UsersModule } from '../users/users.module';
 import { CreateQueueDto } from './dto/create-queue.dto';
-import { NotFoundException } from '@nestjs/common';
+import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { Request } from 'express';
 
 describe('QueuesService', () => {
@@ -118,5 +118,154 @@ describe('QueuesService', () => {
       const deletedQueue = await queuesService.deleteQueueById(queue.id, req);
       expect(deletedQueue).toStrictEqual(queue);
     });
+
+    it('should allow a creator to delete a queue', async () => {
+      const creator = await prismaService.user.create({
+        data: {
+          email: 'antbod@lll.kpi.ua',
+          password: 'pavlovvg',
+          firstName: 'Botik',
+          lastName: 'Pav',
+          admin: false,
+          approved: true,
+        },
+      });
+
+      const req = {
+        user: {
+          userId: creator.id,
+        },
+      } as unknown as Request;
+
+      const queue = await queuesService.createQueue({
+        creatorId: creator.id,
+        labId: 'lab4',
+      });
+
+      const deletedQueue = await queuesService.deleteQueueById(queue.id, req);
+      expect(deletedQueue).toStrictEqual(queue);
+    });
+
+    it('should throw ForbiddenException if user is not admin or creator', async () => {
+      const user = await prismaService.user.create({
+        data: {
+          email: 'random@lll.kpi.ua',
+          password: 'random123',
+          firstName: 'Anon',
+          lastName: 'Stranger',
+          admin: false,
+          approved: true,
+        },
+      });
+
+      const creator = await prismaService.user.create({
+        data: {
+          email: 'creator@lll.kpi.ua',
+          password: 'creator123',
+          firstName: 'Creator',
+          lastName: 'Test',
+          admin: false,
+          approved: true,
+        },
+      });
+
+      const req = {
+        user: {
+          userId: user.id,
+        },
+      } as unknown as Request;
+
+      const queue = await queuesService.createQueue({
+        creatorId: creator.id,
+        labId: 'lab5',
+      });
+
+      await expect(queuesService.deleteQueueById(queue.id, req)).rejects.toThrow(ForbiddenException);
+    });
+  });
+
+  describe('joinQueue', () => {
+    it('should allow user to join a queue', async () => {
+      const user = await prismaService.user.create({
+        data: {
+          email: 'joined@lll.kpi.ua',
+          password: 'joined123',
+          firstName: 'Antin',
+          lastName: 'Banderas',
+          admin: false,
+          approved: true,
+        },
+      });
+
+      const req = {
+        user: {
+          userId: user.id,
+        },
+      } as unknown as Request;
+
+      const queue = await queuesService.createQueue({
+        creatorId: user.id,
+        labId: 'lab6',
+        status: 'PENDING',
+      });
+
+      const joinedQueue = await queuesService.joinQueue(queue.id, req);
+      expect(joinedQueue).toEqual(queue);
+    });
+
+    it('should throw ForbiddenException if the queue status is not PENDING', async () => {
+      const user = await prismaService.user.create({
+        data: {
+          email: 'newuser@lll.kpi.ua',
+          password: 'aboba123',
+          firstName: 'John',
+          lastName: 'Bandera',
+          admin: false,
+          approved: true,
+        },
+      });
+
+      const req = {
+        user: {
+          userId: user.id,
+        },
+      } as unknown as Request;
+
+      const queue = await queuesService.createQueue({
+        creatorId: user.id,
+        labId: 'lab7',
+        status: 'SKIPPED',
+      });
+
+      await expect(queuesService.joinQueue(queue.id, req)).rejects.toThrow(ForbiddenException);
+    });
+
+    it('should throw ForbiddenException if the queue status is not PENDING', async () => {
+      const user = await prismaService.user.create({
+        data: {
+          email: 'newuser@lll.kpi.ua',
+          password: 'aboba123',
+          firstName: 'John',
+          lastName: 'Bandera',
+          admin: false,
+          approved: true,
+        },
+      });
+
+      const req = {
+        user: {
+          userId: user.id,
+        },
+      } as unknown as Request;
+
+      const queue = await queuesService.createQueue({
+        creatorId: user.id,
+        labId: 'lab7',
+        status: 'SKIPPED',
+      });
+
+      await expect(queuesService.joinQueue(queue.id, req)).rejects.toThrow(ForbiddenException);
+    });
+
   });
 });

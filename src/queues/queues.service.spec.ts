@@ -472,4 +472,89 @@ describe('QueuesService', () => {
       await expect(queuesService.leaveQueue(queue.id, req)).rejects.toThrow(NotFoundException);
     });
   });
+
+  describe('resumeQueueStatus', () => {
+    it('should allow admin to resume queue status to PENDING', async () => {
+      const admin = await prismaService.user.create({
+        data: {
+          email: 'MaSach@lll.kpi.ua',
+          password: 'next_monitor6565',
+          firstName: 'Max',
+          lastName: 'Machok',
+          admin: true,
+          approved: true,
+        },
+      });
+
+      const req = {
+        user: {
+          userId: admin.id,
+        },
+      } as unknown as Request;
+
+      const queue = await queuesService.createQueue({
+        creatorId: admin.id,
+        labId: 'lab14',
+        status: 'COMPLETED',
+      });
+
+      await queuesService.resumeQueueStatus(queue.id, req);
+      const updatedQueue = await queuesService.findQueueById(queue.id);
+      expect(updatedQueue.status).toBe('PENDING');
+    });
+
+    it('should throw ForbiddenException if user is not admin', async () => {
+      const user = await prismaService.user.create({
+        data: {
+          email: 'simple_user@lll.kpi.ua',
+          password: 'monitor6565',
+          firstName: 'Sancho',
+          lastName: 'Koval',
+          admin: false,
+          approved: true,
+        },
+      });
+
+      const req = {
+        user: {
+          userId: user.id,
+        },
+      } as unknown as Request;
+
+      const queue = await queuesService.createQueue({
+        creatorId: user.id,
+        labId: 'lab15',
+        status: 'SKIPPED',
+      });
+
+      await expect(queuesService.resumeQueueStatus(queue.id, req)).rejects.toThrow(ForbiddenException);
+    });
+
+    it('should throw ConflictException if queue status is already PENDING', async () => {
+      const admin = await prismaService.user.create({
+        data: {
+          email: 'MaSach@lll.kpi.ua',
+          password: 'next_monitor6565',
+          firstName: 'Max',
+          lastName: 'Machok',
+          admin: true,
+          approved: true,
+        },
+      });
+
+      const req = {
+        user: {
+          userId: admin.id,
+        },
+      } as unknown as Request;
+
+      const queue = await queuesService.createQueue({
+        creatorId: admin.id,
+        labId: 'lab16',
+        status: 'PENDING',
+      });
+
+      await expect(queuesService.resumeQueueStatus(queue.id, req)).rejects.toThrow(ConflictException);
+    });
+  });
 });

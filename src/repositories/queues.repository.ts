@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateQueueDto } from '../queues/dto/create-queue.dto';
 import { QueueStatus } from '@prisma/client';
+import { CreateQueueDto } from '../queues/dto/create-queue.dto';
 
 @Injectable()
 
 export class QueuesRepository {
   constructor (private readonly prisma: PrismaService) {}
   
-  async create (createQueueDto: CreateQueueDto) {
-    const { creatorId, labId, status } = createQueueDto;
+  async create (createQueueDto: CreateQueueDto, creatorId: string) {
+    const { labId, status } = createQueueDto;
     return this.prisma.queue.create({
       data: {
         creatorId,
@@ -22,6 +22,12 @@ export class QueuesRepository {
   async findById (id: string) {
     return this.prisma.queue.findUnique({
       where: { id },
+    });
+  }
+
+  async findAllByLabId (labId: string) {
+    return this.prisma.queue.findMany({
+      where: { labId },
     });
   }
 

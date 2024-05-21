@@ -9,14 +9,21 @@ export class QueuesController {
   constructor (private readonly queuesService: QueuesService) {}
 
   @Post()
-  async createQueue (@Body() createQueueDto: CreateQueueDto) {
-    return this.queuesService.createQueue(createQueueDto);
+  async createQueue (@Body() createQueueDto: CreateQueueDto, @Req() req: Request) {
+    const creatorId = req['user'].userId;
+    return this.queuesService.createQueue(createQueueDto, creatorId);
   }
 
   @Public()
   @Get(':id')
   async findQueueById (@Param('id') id: string) {
     return await this.queuesService.findQueueById(id);
+  }
+
+  @Public()
+  @Get('lab/:labId')
+  async findAllQueuesByLabId (@Param('labId') labId: string) {
+    return await this.queuesService.findAllQueuesByLabId(labId);
   }
 
   @Delete(':id')

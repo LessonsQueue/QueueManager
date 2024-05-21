@@ -102,4 +102,62 @@ describe('UsersService', () => {
       await expect(usersService.getNotApprovedUsers(req)).rejects.toThrow(ForbiddenException);
     });
   });
+
+  describe('getMyInfo', () => {
+    it('should return the information of the logged-in user', async () => {
+      const user = await prismaService.user.create({
+        data: {
+          email: 'notadmin@lll.kpi.ua',
+          password: 'anon1234',
+          firstName: 'Alex',
+          lastName: 'Bond',
+          admin: false,
+          approved: true,
+        },
+      });
+
+      const req = {
+        user: {
+          userId: user.id,
+        },
+      } as unknown as Request;
+
+      const result = await usersService.getMyInfo(req);
+      expect(result).toStrictEqual(user);
+    });
+  });
+
+  describe('isAdmin', () => {
+    it('should return true if the user is an admin', async () => {
+      const admin = await prismaService.user.create({
+        data: {
+          email: 'oleg@lll.kpi.ua',
+          password: '123456',
+          firstName: 'John',
+          lastName: 'Doe',
+          admin: true,
+          approved: true,
+        },
+      });
+
+      const result = await usersService.isAdmin(admin.id);
+      expect(result).toBe(true);
+    });
+
+    it('should return false if the user is not an admin', async () => {
+      const user = await prismaService.user.create({
+        data: {
+          email: 'notadmin@lll.kpi.ua',
+          password: 'anon1234',
+          firstName: 'Alex',
+          lastName: 'Bond',
+          admin: false,
+          approved: true,
+        },
+      });
+
+      const result = await usersService.isAdmin(user.id);
+      expect(result).toBe(false);
+    });
+  });
 });

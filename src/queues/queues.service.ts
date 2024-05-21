@@ -12,14 +12,18 @@ export class QueuesService {
     private readonly userService: UsersService,
   ) {}
   
-  async createQueue (queue: CreateQueueDto): Promise<Queue> {
-    return this.queueRepository.create(queue);
+  async createQueue (queue: CreateQueueDto, creatorId: string): Promise<Queue> {
+    return this.queueRepository.create(queue, creatorId);
   }
 
   async findQueueById (id: string): Promise<Queue> {
     const queue = await this.queueRepository.findById(id);
     if (!queue) throw new NotFoundException(`Queue with this ${id} id was not found`);
     return queue;
+  }
+
+  async findAllQueuesByLabId (labId: string): Promise<Queue[]> {
+    return this.queueRepository.findAllByLabId(labId);
   }
 
   async deleteQueueById (id: string, req: Request): Promise<Queue> {

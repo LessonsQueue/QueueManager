@@ -1,73 +1,89 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
-
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
-
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
-
 ## Description
+This is the LessonsQueue project's API repository. The project is being developed to facilitate the process of passing laboratory work by university students.
+This API provides students with the ability to efficiently manage their lab assignment queue. 
+The application provides the ability to create the queue, add students to the queue, move and remove them from it, as well as mark the completion of tasks, etc...
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+**Our tech stack**: Nest.js and Prisma (with PostgreSQL as DBMS)
+
+**Design Document**: For more understanding of this project you can visit our [Design Document](https://docs.google.com/document/d/1VQChDcqtpMh4TreQL61J6O9NR8FkwoBUx1zo6jvGuPg/edit)
+
+## Our developers
+This project is being made by:
+* [Danyil Tymofeiev](https://github.com/SharpDevOps10)
+* [Bogdan Yarmolka](https://github.com/thebladehit)
+* [Anton Dovzhenko](https://github.com/KobbAsa)
+* [Nazarii Radichenko](https://github.com/radichenko)
 
 ## Installation
+* First and foremost, you need to make sure that you have installed [Node.js](https://nodejs.org/en)
 
+* After that, you have to clone this repository and enter the working folder:
+```bash
+$ git clone https://github.com/LessonsQueue/QueueManagerApi.git
+$ cd QueueManagerApi
+```
+* Then you have to install the dependencies for this project:
 ```bash
 $ npm install
 ```
 
 ## Running the app
-
+In order to run this project you have to write one of these commands:
+* In development mode: 
 ```bash
 # development
 $ npm run start
-
+```
+* In watch mode: 
+```bash
 # watch mode
 $ npm run start:dev
-
+```
+* In production mode:
+```bash
 # production mode
 $ npm run start:prod
 ```
-
-## Test
-
+## Tests
+The tests are located in the same folder as the `services` and are marked as `.spec.ts`. If you want to run our tests locally, you should:
+* Start PostgreSQL Database for testing using [docker compose](https://docs.docker.com/compose/install/):
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+$ docker-compose up
+```
+* Apply all migrations to your testing Database:
+```bash
+$ npm run test:migrate
+```
+* And run all integration tests:
+```bash
+$ npm run test:integration
 ```
 
-## Support
+## Building
+If you want to build our project you have to write this command:
+```bash
+$ npm run build
+```
+Or you can use our [Dockerfile](https://github.com/LessonsQueue/QueueManagerApi/blob/main/Dockerfile) to build the project (how to build the image of our app, visit the `Dockerization` sections of README)
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+## Migrations
+If you want to use our logic you have to use your prepared Database (with PostgreSQL as DBMS) and add it to your `.env`.
+You can see the example of your `.env` file here [.env.example](https://github.com/LessonsQueue/QueueManagerApi/blob/main/.env.example).
+Afterwards, you should apply all migrations to your Database:
+```bash
+$ npx prisma migrate dev
+```
 
-## Stay in touch
+## Continuous Integration
+We have also added CI using `GitHub Actions` (located in `.github` folder) for checking the build and running integration tests. 
+Here you can find our [All Workflows](https://github.com/LessonsQueue/QueueManagerApi/actions)
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](LICENSE).
+## Dockerization
+If you want to build our image, you should write these commands:
+```bash
+$ sudo docker build -t nest:latest .
+```
+After that: 
+```bash
+$ sudo docker run -p 3000:3000 --env-file .env nest:latest
+```

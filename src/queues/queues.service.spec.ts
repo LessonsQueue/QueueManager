@@ -11,6 +11,7 @@ import { UsersModule } from '../users/users.module';
 import { CreateQueueDto } from './dto/create-queue.dto';
 import { ConflictException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { Request } from 'express';
+import { Queue } from '@prisma/client';
 
 describe('QueuesService', () => {
   let prismaService: PrismaService;
@@ -84,6 +85,29 @@ describe('QueuesService', () => {
     it('should throw NotFoundException if queue is not found', async () => {
       const queueId = 'nonexistent-id';
       await expect(queuesService.findQueueById(queueId)).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('findAllQueuesByLabId', () => {
+    it('should return an array of queues', async () => {
+      const labId = 'test-lab-id';
+      const user = await prismaService.user.create({
+        data: {
+          email: 'oleg@lll.kpi.ua',
+          password: '123456',
+          firstName: 'John',
+          lastName: 'Doe',
+          admin: false,
+          approved: true,
+        },
+      });
+
+      const queueDto: CreateQueueDto = { labId };
+      const queue1 = await queuesService.createQueue(queueDto, user.id);
+      const queue2 = await queuesService.createQueue(queueDto, user.id);
+
+      const result = await queuesService.findAllQueuesByLabId(labId);
+      expect(result).toEqual([queue1, queue2]);
     });
   });
 

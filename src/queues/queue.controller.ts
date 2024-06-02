@@ -13,6 +13,12 @@ export class QueuesController {
     return await this.queuesService.findQueueById(id);
   }
 
+  @Public()
+  @Get('lab/:labId')
+  async findAllQueuesByLabId (@Param('labId') labId: string) {
+    return await this.queuesService.findAllQueuesByLabId(labId);
+  }
+
   @Delete(':id')
   async deleteQueueById (@Param('id') id: string, @Req() req: Request) {
     return this.queuesService.deleteQueueById(id, req);

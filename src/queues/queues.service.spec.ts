@@ -11,6 +11,7 @@ import { UsersModule } from '../users/users.module';
 import { CreateQueueDto } from './dto/create-queue.dto';
 import { ConflictException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { Request } from 'express';
+import { Queue } from '@prisma/client';
 
 describe('QueuesService', () => {
   let prismaService: PrismaService;
@@ -50,10 +51,9 @@ describe('QueuesService', () => {
       });
 
       const queueDto: CreateQueueDto = {
-        creatorId: user.id,
         labId: 'lab1',
       };
-      const queue = await queuesService.createQueue(queueDto);
+      const queue = await queuesService.createQueue(queueDto, user.id);
 
       expect(queue).toHaveProperty('id');
       expect(queue.creatorId).toBe(user.id);
@@ -74,10 +74,7 @@ describe('QueuesService', () => {
         },
       });
 
-      const queue = await queuesService.createQueue({
-        creatorId: user.id,
-        labId: 'lab2',
-      });
+      const queue = await queuesService.createQueue({ labId: 'lab2' }, user.id);
 
       const foundQueue = await queuesService.findQueueById(queue.id);
 
@@ -88,6 +85,29 @@ describe('QueuesService', () => {
     it('should throw NotFoundException if queue is not found', async () => {
       const queueId = 'nonexistent-id';
       await expect(queuesService.findQueueById(queueId)).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('findAllQueuesByLabId', () => {
+    it('should return an array of queues', async () => {
+      const labId = 'test-lab-id';
+      const user = await prismaService.user.create({
+        data: {
+          email: 'oleg@lll.kpi.ua',
+          password: '123456',
+          firstName: 'John',
+          lastName: 'Doe',
+          admin: false,
+          approved: true,
+        },
+      });
+
+      const queueDto: CreateQueueDto = { labId };
+      const queue1 = await queuesService.createQueue(queueDto, user.id);
+      const queue2 = await queuesService.createQueue(queueDto, user.id);
+
+      const result = await queuesService.findAllQueuesByLabId(labId);
+      expect(result).toEqual([queue1, queue2]);
     });
   });
 
@@ -110,10 +130,7 @@ describe('QueuesService', () => {
         },
       } as unknown as Request;
 
-      const queue = await queuesService.createQueue({
-        creatorId: admin.id,
-        labId: 'lab3',
-      });
+      const queue = await queuesService.createQueue({ labId: 'lab3' }, admin.id);
 
       const deletedQueue = await queuesService.deleteQueueById(queue.id, req);
       expect(deletedQueue).toStrictEqual(queue);
@@ -137,10 +154,7 @@ describe('QueuesService', () => {
         },
       } as unknown as Request;
 
-      const queue = await queuesService.createQueue({
-        creatorId: creator.id,
-        labId: 'lab4',
-      });
+      const queue = await queuesService.createQueue({ labId: 'lab4' }, creator.id);
 
       const deletedQueue = await queuesService.deleteQueueById(queue.id, req);
       expect(deletedQueue).toStrictEqual(queue);
@@ -175,10 +189,7 @@ describe('QueuesService', () => {
         },
       } as unknown as Request;
 
-      const queue = await queuesService.createQueue({
-        creatorId: creator.id,
-        labId: 'lab5',
-      });
+      const queue = await queuesService.createQueue({ labId: 'lab5' }, creator.id);
 
       await expect(queuesService.deleteQueueById(queue.id, req)).rejects.toThrow(ForbiddenException);
     });
@@ -204,10 +215,9 @@ describe('QueuesService', () => {
       } as unknown as Request;
 
       const queue = await queuesService.createQueue({
-        creatorId: user.id,
         labId: 'lab6',
         status: 'PENDING',
-      });
+      }, user.id);
 
       const joinedQueue = await queuesService.joinQueue(queue.id, req);
       expect(joinedQueue).toStrictEqual(
@@ -239,10 +249,9 @@ describe('QueuesService', () => {
       } as unknown as Request;
 
       const queue = await queuesService.createQueue({
-        creatorId: user.id,
         labId: 'lab7',
         status: 'SKIPPED',
-      });
+      }, user.id);
 
       await expect(queuesService.joinQueue(queue.id, req)).rejects.toThrow(ForbiddenException);
     });
@@ -266,10 +275,9 @@ describe('QueuesService', () => {
       } as unknown as Request;
 
       const queue = await queuesService.createQueue({
-        creatorId: user.id,
         labId: 'lab8',
         status: 'PENDING',
-      });
+      }, user.id);
 
       await queuesService.joinQueue(queue.id, req);
       await expect(queuesService.joinQueue(queue.id, req)).rejects.toThrow(ConflictException);
@@ -295,10 +303,7 @@ describe('QueuesService', () => {
         },
       } as unknown as Request;
 
-      const queue = await queuesService.createQueue({
-        creatorId: user.id,
-        labId: 'lab9',
-      });
+      const queue = await queuesService.createQueue({ labId: 'lab9' }, user.id);
 
       await queuesService.joinQueue(queue.id, req);
 
@@ -331,10 +336,7 @@ describe('QueuesService', () => {
         },
       } as unknown as Request;
 
-      const queue = await queuesService.createQueue({
-        creatorId: user.id,
-        labId: 'lab10',
-      });
+      const queue = await queuesService.createQueue({ labId: 'lab10' }, user.id);
 
       await expect(queuesService.leaveQueue(queue.id, req)).rejects.toThrow(NotFoundException);
     });
@@ -370,10 +372,7 @@ describe('QueuesService', () => {
         },
       } as unknown as Request;
 
-      const queue = await queuesService.createQueue({
-        creatorId: user.id,
-        labId: 'lab11',
-      });
+      const queue = await queuesService.createQueue({ labId: 'lab11' }, user.id);
 
       await queuesService.joinQueue(queue.id, {
         user: {
@@ -421,10 +420,7 @@ describe('QueuesService', () => {
         },
       } as unknown as Request;
 
-      const queue = await queuesService.createQueue({
-        creatorId: user.id,
-        labId: 'lab12',
-      });
+      const queue = await queuesService.createQueue({ labId: 'lab12' }, user.id);
 
       await queuesService.joinQueue(queue.id, {
         user: {
@@ -464,10 +460,7 @@ describe('QueuesService', () => {
         },
       } as unknown as Request;
 
-      const queue = await queuesService.createQueue({
-        creatorId: user.id,
-        labId: 'lab13',
-      });
+      const queue = await queuesService.createQueue({ labId: 'lab13' }, user.id);
 
       await expect(queuesService.leaveQueue(queue.id, req)).rejects.toThrow(NotFoundException);
     });
@@ -493,10 +486,9 @@ describe('QueuesService', () => {
       } as unknown as Request;
 
       const queue = await queuesService.createQueue({
-        creatorId: admin.id,
         labId: 'lab14',
         status: 'COMPLETED',
-      });
+      }, admin.id);
 
       await queuesService.resumeQueueStatus(queue.id, req);
       const updatedQueue = await queuesService.findQueueById(queue.id);
@@ -522,10 +514,9 @@ describe('QueuesService', () => {
       } as unknown as Request;
 
       const queue = await queuesService.createQueue({
-        creatorId: user.id,
         labId: 'lab15',
         status: 'SKIPPED',
-      });
+      }, user.id);
 
       await expect(queuesService.resumeQueueStatus(queue.id, req)).rejects.toThrow(ForbiddenException);
     });
@@ -549,10 +540,9 @@ describe('QueuesService', () => {
       } as unknown as Request;
 
       const queue = await queuesService.createQueue({
-        creatorId: admin.id,
         labId: 'lab16',
         status: 'PENDING',
-      });
+      }, admin.id);
 
       await expect(queuesService.resumeQueueStatus(queue.id, req)).rejects.toThrow(ConflictException);
     });

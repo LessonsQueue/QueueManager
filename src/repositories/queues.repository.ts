@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateQueueDto } from '../queues/dto/create-queue.dto';
 import { QueueStatus } from '@prisma/client';
+import { CreateQueueDto } from '../queues/dto/create-queue.dto';
 
 @Injectable()
 
@@ -35,6 +35,12 @@ export class QueuesRepository {
           }
         }
       }
+    });
+  }
+
+  async findAllByLabId (labId: string) {
+    return this.prisma.queue.findMany({
+      where: { labId },
     });
   }
 

@@ -12,8 +12,8 @@ export class QueuesService {
     private readonly userService: UsersService,
   ) {}
   
-  async createQueue (queue: CreateQueueDto): Promise<Queue> {
-    return this.queueRepository.create(queue);
+  async createQueue (queue: CreateQueueDto, creatorId: string): Promise<Queue> {
+    return this.queueRepository.create(queue, creatorId);
   }
 
   async findQueueById (id: string): Promise<Queue> {
@@ -22,6 +22,10 @@ export class QueuesService {
       return this.createQueue({ labId: id } as CreateQueueDto);
     }
     return queue;
+  }
+
+  async findAllQueuesByLabId (labId: string): Promise<Queue[]> {
+    return this.queueRepository.findAllByLabId(labId);
   }
 
   async deleteQueueById (id: string, req: Request): Promise<Queue> {

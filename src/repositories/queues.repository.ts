@@ -9,19 +9,32 @@ export class QueuesRepository {
   constructor (private readonly prisma: PrismaService) {}
   
   async create (createQueueDto: CreateQueueDto) {
-    const { creatorId, labId, status } = createQueueDto;
+    const { labId, status } = createQueueDto;
     return this.prisma.queue.create({
       data: {
-        creatorId,
         labId,
         status,
       },
+      include: {
+        participants: {
+          include: {
+            user: true,
+          }
+        }
+      }
     });
   }
 
-  async findById (id: string) {
+  async findByLabId (labId: string) {
     return this.prisma.queue.findUnique({
-      where: { id },
+      where: { labId },
+      include: {
+        participants: {
+          include: {
+            user: true,
+          }
+        }
+      }
     });
   }
 

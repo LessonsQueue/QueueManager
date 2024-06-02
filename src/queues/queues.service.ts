@@ -17,8 +17,10 @@ export class QueuesService {
   }
 
   async findQueueById (id: string): Promise<Queue> {
-    const queue = await this.queueRepository.findById(id);
-    if (!queue) throw new NotFoundException(`Queue with this ${id} id was not found`);
+    const queue = await this.queueRepository.findByLabId(id);
+    if (!queue) {
+      return this.createQueue({ labId: id } as CreateQueueDto);
+    }
     return queue;
   }
 
@@ -27,7 +29,7 @@ export class QueuesService {
     const isAdmin = await this.userService.isAdmin(userId);
 
     const queue = await this.findQueueById(id);
-    if (!isAdmin && queue.creatorId !== userId) {
+    if (!isAdmin) {
       throw new ForbiddenException('You do not have permission to delete this queue');
     }
 
@@ -41,7 +43,7 @@ export class QueuesService {
     const userId = req['user'].userId;
 
     const userInQueue = await this.queueRepository.findUserInQueue(queue.id, userId);
-    if (userInQueue) throw new ConflictException(`User with id ${userId} has already been found in queue`);
+    if (userInQueue) throw new ConflictException(`You have already joined this queue`);
 
     return this.queueRepository.addUserToQueue(queue.id, userId);
   }
@@ -76,5 +78,4 @@ export class QueuesService {
 
     return await this.queueRepository.updateQueueStatus(queueId, 'PENDING');
   }
-
 }

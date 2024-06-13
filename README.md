@@ -87,3 +87,8 @@ After that:
 ```bash
 $ sudo docker run -p 3000:3000 --env-file .env nest:latest
 ```
+
+You can also get the latest version of our image from [DockerHub repository](https://hub.docker.com/repository/docker/rerorerio8/queue-manager/general): 
+```bash
+$ docker pull rerorerio8/queue-manager:latest 
+```

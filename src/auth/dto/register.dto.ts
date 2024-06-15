@@ -5,7 +5,7 @@ export class RegisterDto {
   @IsString()
   @IsNotEmpty()
   @IsEmail()
-  @Matches(/^[a-zA-Z0-9._%+-]+@lll\.kpi\.ua$/, { message: 'email must be in @lll.kpu.ua domain' })
+  @Matches(/^[a-zA-Z0-9._%+-]+@lll\.kpi\.ua$/, { message: 'email must be in @lll.kpi.ua domain' })
     email: string;
 
   @IsString()

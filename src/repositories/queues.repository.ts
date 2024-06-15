@@ -8,20 +8,33 @@ import { CreateQueueDto } from '../queues/dto/create-queue.dto';
 export class QueuesRepository {
   constructor (private readonly prisma: PrismaService) {}
   
-  async create (createQueueDto: CreateQueueDto, creatorId: string) {
+  async create (createQueueDto: CreateQueueDto) {
     const { labId, status } = createQueueDto;
     return this.prisma.queue.create({
       data: {
-        creatorId,
         labId,
         status,
       },
+      include: {
+        participants: {
+          include: {
+            user: true,
+          }
+        }
+      }
     });
   }
 
-  async findById (id: string) {
+  async findByLabId (labId: string) {
     return this.prisma.queue.findUnique({
-      where: { id },
+      where: { labId },
+      include: {
+        participants: {
+          include: {
+            user: true,
+          }
+        }
+      }
     });
   }
 

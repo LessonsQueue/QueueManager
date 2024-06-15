@@ -8,13 +8,6 @@ import { Request } from 'express';
 export class QueuesController {
   constructor (private readonly queuesService: QueuesService) {}
 
-  @Post()
-  async createQueue (@Body() createQueueDto: CreateQueueDto, @Req() req: Request) {
-    const creatorId = req['user'].userId;
-    return this.queuesService.createQueue(createQueueDto, creatorId);
-  }
-
-  @Public()
   @Get(':id')
   async findQueueById (@Param('id') id: string) {
     return await this.queuesService.findQueueById(id);

@@ -26,7 +26,6 @@ model User {
   refreshToken  String?  @unique
   verifiedToken String?  @unique
 
-  createdQueues Queue[]
   joinedQueues  UserQueue[]
 
   @@map("users")
@@ -40,13 +39,11 @@ enum QueueStatus {
 
 model Queue {
   id        String      @id @default(uuid())
-  creatorId String      @map("creator_id")
-  labId     String      @map("lab_id")
+  labId     String      @map("lab_id") @unique
   status    QueueStatus @default(PENDING)
   createdAt DateTime    @default(now()) @map("created_at")
   updatedAt DateTime    @updatedAt @map("updated_at")
 
-  creator      User        @relation(fields: [creatorId], references: [id], onDelete: Cascade)
   participants UserQueue[]
 
   @@map("queues")
